@@ -9,8 +9,9 @@ from matplotlib.backend_bases import key_press_handler
 
 window = Tk()
 window.title("Sorting Visualizer")
-window.geometry("1000x1000")
-
+window.geometry("800x600")
+animating = False
+canvas = None
 
 # NOTE: Python version >=3.3 is required, due to "yield from" feature.
 
@@ -123,21 +124,33 @@ def selectionsort(A):
 		swap(A, i, minIdx)
 		yield A
 
-if __name__ == "__main__":
-	# Get user input to determine range of integers (1 to N) and desired
-	# sorting method (algorithm).
-	# N = int(input("Enter number of integers: "))
-	N = 30
-	# method_msg = "Enter sorting method:\n(b)ubble\n(i)nsertion\n(m)erge \
-	#     \n(q)uick\n(s)election\n"
-	# method = input(method_msg)
-	method = 'b'
+# Get user input to determine range of integers (1 to N) and desired
+# sorting method (algorithm).
+# N = int(input("Enter number of integers: "))
+N = 30
+# method_msg = "Enter sorting method:\n(b)ubble\n(i)nsertion\n(m)erge \
+#     \n(q)uick\n(s)election\n"
+# method = input(method_msg)
+# method = 'b'
 
-	# Build and randomly shuffle list of integers.
-	A = [x + 1 for x in range(N)]
+# Build and randomly shuffle list of integers.
+A = [x + 1 for x in range(N)]
+def arrayReset(A):
 	random.seed(time.time())
 	random.shuffle(A)
-
+restart = False
+iteration = 0
+def visualize(N, method):
+	global animating, restart
+	animating = True
+	if (not restart):
+		restart = True
+		arrayReset(A)
+	else:
+		arrayReset(A)
+		anim.pause()
+		plt.close()
+		return
 	# Get appropriate generator to supply to matplotlib FuncAnimation method.
 	if method == "b":
 		title = "Bubble sort"
@@ -155,44 +168,30 @@ if __name__ == "__main__":
 		title = "Selection sort"
 		generator = selectionsort(A)
 
+
 	# Initialize figure and axis.
 	fig, ax = plt.subplots()
+	
 	# ax.set_title(title)
 	plt.title(title)
-	
 
 	# Initialize a bar plot. Note that matplotlib.pyplot.bar() returns a
 	# list of rectangles (with each bar in the bar plot corresponding
 	# to one rectangle), which we store in bar_rects.
-	
-	bar_rects = plt.bar(range(len(A)), A, align="center") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
+	bar_rects = plt.bar(range(len(A)), A, align="center")
 
 	# Set axis limits. Set y axis upper limit high enough that the tops of
 	# the bars won't overlap with the text label.
 	# ax.set_xlim(0, N)
 	# ax.set_ylim(0, (N+4))
+	plt.ylim(0,(N+4))
 
 	# Place a text label in the upper-left corner of the plot to display
 	# number of operations performed by the sorting algorithm (each "yield"
 	# is treated as 1 operation).
 	text = plt.text(0.02, 0.95, "", transform=ax.transAxes)
 
-	#adding tkinter:
-	canvas = FigureCanvasTkAgg(fig, master = window)
-	canvas.draw()
-
-	toolbar = NavigationToolbar2Tk(canvas,window, pack_toolbar=False)
-	toolbar.update()
-
-	canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
-	canvas.mpl_connect("key_press_event", key_press_handler)
-
-	button = Button(master=window, text="Quit", command=window.quit)
-	button.pack(side=BOTTOM)
-
-	toolbar.pack(side=BOTTOM, fill=X)
-	canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-
+	updateOrCreateCanvas(fig)
 
 
 	# Define function update_fig() for use with matplotlib.pyplot.FuncAnimation().
@@ -205,23 +204,75 @@ if __name__ == "__main__":
 	# passed by value).
 	# NOTE: Alternatively, iteration could be re-declared within update_fig()
 	# with the "global" keyword (or "nonlocal" keyword).
-	iteration = 0
+
+	def handleClose():
+		anim.pause()
+		plt.close(fig)
+		global animating
+		animating = False
+		print("I was called")
+		onClosing()
+
+
 	def update_fig(A, rects):
 		for rect, val in zip(rects, A):
 			rect.set_height(val)
 		global iteration
 		iteration += 1
 		text.set_text("# of operations: {}".format(iteration))
+		global stop
+		if (stop):
+			handleClose()
 
 
+	# global anim
 	anim = animation.FuncAnimation(fig, func=update_fig,
-		fargs=( [bar_rects]), frames=generator, interval=1,
+		fargs=([bar_rects]), frames=generator, interval=1,
 		repeat=False)
-	plt.ylim(0,(N+4))
+	print("I am done")
 
 
-	def onClosing():
-		anim.pause()
+#adding tkinter:
+
+def updateOrCreateCanvas(fig):
+	global canvas
+	if (canvas != None):
+		print("\a")
+		print("helloooooooooooooooooo")
+		canvas.get_tk_widget().pack_forget()
+		fig.clear()
+		time.sleep(10)
+	
+	canvas = FigureCanvasTkAgg(fig, master = window)
+	canvas.draw()
+
+	toolbar = NavigationToolbar2Tk(canvas,window,  pack_toolbar=False)
+	toolbar.update()
+
+	canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
+	canvas.mpl_connect("key_press_event", key_press_handler)
+
+	toolbar.pack(side=BOTTOM, fill=X)
+	canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+	# return canvas
+
+
+stop = False
+def onClosing():
+	global animating
+	if (animating):
+		# print("I was called")
+		# anim.pause()
+		# time.sleep(1)
+		# window.destroy()
+		global stop
+		stop = True
+	else:
+		print("Hey man")
 		window.destroy()
-	window.protocol("WM_DELETE_WINDOW", onClosing)
-	window.mainloop()
+
+button = Button(master=window, text="BubbleSort", command= lambda: visualize(N, 'b') )
+button.pack(side=BOTTOM)
+window.protocol("WM_DELETE_WINDOW", onClosing)
+print("\a")
+window.mainloop()
