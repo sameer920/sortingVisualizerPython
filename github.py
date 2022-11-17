@@ -219,9 +219,9 @@ if __name__ == "__main__":
 		repeat=False)
 	plt.ylim(0,(N+4))
 
-
 	def onClosing():
-		anim.pause()
+		window.quit()
 		window.destroy()
+
 	window.protocol("WM_DELETE_WINDOW", onClosing)
 	window.mainloop()
