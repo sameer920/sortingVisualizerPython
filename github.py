@@ -2,6 +2,7 @@ import random
 import time
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib import figure
 from tkinter import *
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.backend_bases import key_press_handler
@@ -156,16 +157,18 @@ if __name__ == "__main__":
 		generator = selectionsort(A)
 
 	# Initialize figure and axis.
-	fig, ax = plt.subplots()
-	# ax.set_title(title)
-	plt.title(title)
+	fig = figure.Figure() #using plt.subplots hijacks the terminal if we close the window in the middle of sorting
+	# fig, ax = plt.subplots()
+	ax = fig.add_subplot()
+	ax.set_title(title)
+	# plt.title(title)
 	
 
 	# Initialize a bar plot. Note that matplotlib.pyplot.bar() returns a
 	# list of rectangles (with each bar in the bar plot corresponding
 	# to one rectangle), which we store in bar_rects.
 	
-	bar_rects = plt.bar(range(len(A)), A, align="center") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
+	bar_rects = ax.bar(range(len(A)), A, align="center") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
 
 	# Set axis limits. Set y axis upper limit high enough that the tops of
 	# the bars won't overlap with the text label.
@@ -175,11 +178,12 @@ if __name__ == "__main__":
 	# Place a text label in the upper-left corner of the plot to display
 	# number of operations performed by the sorting algorithm (each "yield"
 	# is treated as 1 operation).
-	text = plt.text(0.02, 0.95, "", transform=ax.transAxes)
+	text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
 
 	#adding tkinter:
 	canvas = FigureCanvasTkAgg(fig, master = window)
 	canvas.draw()
+
 
 	toolbar = NavigationToolbar2Tk(canvas,window, pack_toolbar=False)
 	toolbar.update()
@@ -217,10 +221,12 @@ if __name__ == "__main__":
 	anim = animation.FuncAnimation(fig, func=update_fig,
 		fargs=( [bar_rects]), frames=generator, interval=1,
 		repeat=False)
-	plt.ylim(0,(N+4))
+	ax.set_ylim(0,(N+4))
 
 	def onClosing():
-		window.quit()
+		global canvas
+		# canvas.
+		# window.quit()
 		window.destroy()
 
 	window.protocol("WM_DELETE_WINDOW", onClosing)
