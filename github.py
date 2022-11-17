@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import figure
 from tkinter import *
+from tkinter.ttk import *
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.backend_bases import key_press_handler
 
@@ -223,11 +224,11 @@ def graphAnimation(text, bar_rects,fig, generator):
 			rect.set_height(val)
 		# global iteration
 		iteration[0] += 1
-		text.set_text("# of operations: {}".format(iteration))
+		text.set_text("# of operations: {}".format(iteration[0]))
 
 	global anim
 	anim = animation.FuncAnimation(fig, func=update_fig,
-		fargs=( bar_rects,iteration), frames=generator, interval=1,
+		fargs=( bar_rects,iteration), frames=generator, interval=0.0001,
 		repeat=False)
 
 def visualize(method, N):
@@ -251,26 +252,31 @@ def visualize(method, N):
 	graphAnimation(text, bar_rects, fig, generator)
 
 
-def onClosing():
-	'''Event handler to close the window gracefully'''
-	global canvas
-	# canvas.
-	# window.quit()
-	window.destroy()
+# def onClosing():
+# 	'''Event handler to close the window gracefully'''
+# 	global canvas
+# 	# canvas.
+# 	# window.quit()
+# 	window.destroy()
 
 
 #main program:
 window = Tk()
 window.title("Sorting Visualizer")
 window.geometry("600x600")
-window.protocol("WM_DELETE_WINDOW", onClosing)
+# window.protocol("WM_DELETE_WINDOW", onClosing)
 canvas = None
 
 method = 'b'
-N = 30
+N = 1000
 A = []
 fig = None
-button = Button(master=window, text="BubbleSort", command= lambda: visualize('b',N))
+options = ["Bubble Sort","Bubble Sort","Insertion Sort", "Merge Sort", "Quick Sort", "Selection Sort"] 
+clicked = StringVar()
+clicked.set("Bubble Sort")
+dropDown = OptionMenu(window, clicked, *options)
+dropDown.pack()
+button = Button(master=window, text="Run", command= lambda: visualize(clicked.get()[0].lower(),N))
 button.pack(side=BOTTOM)
 
 # visualize('b',N)
