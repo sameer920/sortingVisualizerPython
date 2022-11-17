@@ -8,137 +8,129 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 from matplotlib.backend_bases import key_press_handler
 
 
-window = Tk()
-window.title("Sorting Visualizer")
-window.geometry("1000x1000")
 
 
 # NOTE: Python version >=3.3 is required, due to "yield from" feature.
 
-def swap(A, i, j):
-	"""Helper function to swap elements i and j of list A."""
+# Get user input to determine range of integers (1 to N) and desired
+# sorting method (algorithm).
+# N = int(input("Enter number of integers: "))
 
-	if i != j:
-		A[i], A[j] = A[j], A[i]
+# method_msg = "Enter sorting method:\n(b)ubble\n(i)nsertion\n(m)erge \
+#     \n(q)uick\n(s)election\n"
+# method = input(method_msg)
 
-def bubblesort(A):
-	"""In-place bubble sort."""
+def sort(method, N):
+	global A
+	def swap(A, i, j):
+		"""Helper function to swap elements i and j of list A."""
 
-	if len(A) == 1:
-		return
+		if i != j:
+			A[i], A[j] = A[j], A[i]
 
-	swapped = True
-	for i in range(len(A) - 1):
-		if not swapped:
-			break
-		swapped = False
-		for j in range(len(A) - 1 - i):
-			if A[j] > A[j + 1]:
-				swap(A, j, j + 1)
-				swapped = True
-			yield A
+	def bubblesort(A):
+		"""In-place bubble sort."""
 
-def insertionsort(A):
-	"""In-place insertion sort."""
+		if len(A) == 1:
+			return
 
-	for i in range(1, len(A)):
-		j = i
-		while j > 0 and A[j] < A[j - 1]:
-			swap(A, j, j - 1)
-			j -= 1
-			yield A
+		swapped = True
+		for i in range(len(A) - 1):
+			if not swapped:
+				break
+			swapped = False
+			for j in range(len(A) - 1 - i):
+				if A[j] > A[j + 1]:
+					swap(A, j, j + 1)
+					swapped = True
+				yield A
 
-def mergesort(A, start, end):
-	"""Merge sort."""
+	def insertionsort(A):
+		"""In-place insertion sort."""
 
-	if end <= start:
-		return
+		for i in range(1, len(A)):
+			j = i
+			while j > 0 and A[j] < A[j - 1]:
+				swap(A, j, j - 1)
+				j -= 1
+				yield A
 
-	mid = start + ((end - start + 1) // 2) - 1
-	yield from mergesort(A, start, mid)
-	yield from mergesort(A, mid + 1, end)
-	yield from merge(A, start, mid, end)
-	yield A
+	def mergesort(A, start, end):
+		"""Merge sort."""
 
-def merge(A, start, mid, end):
-	"""Helper function for merge sort."""
-	
-	merged = []
-	leftIdx = start
-	rightIdx = mid + 1
+		if end <= start:
+			return
 
-	while leftIdx <= mid and rightIdx <= end:
-		if A[leftIdx] < A[rightIdx]:
+		mid = start + ((end - start + 1) // 2) - 1
+		yield from mergesort(A, start, mid)
+		yield from mergesort(A, mid + 1, end)
+		yield from merge(A, start, mid, end)
+		yield A
+
+	def merge(A, start, mid, end):
+		"""Helper function for merge sort."""
+		
+		merged = []
+		leftIdx = start
+		rightIdx = mid + 1
+
+		while leftIdx <= mid and rightIdx <= end:
+			if A[leftIdx] < A[rightIdx]:
+				merged.append(A[leftIdx])
+				leftIdx += 1
+			else:
+				merged.append(A[rightIdx])
+				rightIdx += 1
+
+		while leftIdx <= mid:
 			merged.append(A[leftIdx])
 			leftIdx += 1
-		else:
+
+		while rightIdx <= end:
 			merged.append(A[rightIdx])
 			rightIdx += 1
 
-	while leftIdx <= mid:
-		merged.append(A[leftIdx])
-		leftIdx += 1
-
-	while rightIdx <= end:
-		merged.append(A[rightIdx])
-		rightIdx += 1
-
-	for i, sorted_val in enumerate(merged):
-		A[start + i] = sorted_val
-		yield A
-
-def quicksort(A, start, end):
-	"""In-place quicksort."""
-
-	if start >= end:
-		return
-
-	pivot = A[end]
-	pivotIdx = start
-
-	for i in range(start, end):
-		if A[i] < pivot:
-			swap(A, i, pivotIdx)
-			pivotIdx += 1
-		yield A
-	swap(A, end, pivotIdx)
-	yield A
-
-	yield from quicksort(A, start, pivotIdx - 1)
-	yield from quicksort(A, pivotIdx + 1, end)
-
-def selectionsort(A):
-	"""In-place selection sort."""
-	if len(A) == 1:
-		return
-
-	for i in range(len(A)):
-		# Find minimum unsorted value.
-		minVal = A[i]
-		minIdx = i
-		for j in range(i, len(A)):
-			if A[j] < minVal:
-				minVal = A[j]
-				minIdx = j
+		for i, sorted_val in enumerate(merged):
+			A[start + i] = sorted_val
 			yield A
-		swap(A, i, minIdx)
+
+	def quicksort(A, start, end):
+		"""In-place quicksort."""
+
+		if start >= end:
+			return
+
+		pivot = A[end]
+		pivotIdx = start
+
+		for i in range(start, end):
+			if A[i] < pivot:
+				swap(A, i, pivotIdx)
+				pivotIdx += 1
+			yield A
+		swap(A, end, pivotIdx)
 		yield A
 
-if __name__ == "__main__":
-	# Get user input to determine range of integers (1 to N) and desired
-	# sorting method (algorithm).
-	# N = int(input("Enter number of integers: "))
-	N = 30
-	# method_msg = "Enter sorting method:\n(b)ubble\n(i)nsertion\n(m)erge \
-	#     \n(q)uick\n(s)election\n"
-	# method = input(method_msg)
-	method = 'b'
+		yield from quicksort(A, start, pivotIdx - 1)
+		yield from quicksort(A, pivotIdx + 1, end)
 
-	# Build and randomly shuffle list of integers.
-	A = [x + 1 for x in range(N)]
-	random.seed(time.time())
-	random.shuffle(A)
+	def selectionsort(A):
+		"""In-place selection sort."""
+		if len(A) == 1:
+			return
 
+		for i in range(len(A)):
+			# Find minimum unsorted value.
+			minVal = A[i]
+			minIdx = i
+			for j in range(i, len(A)):
+				if A[j] < minVal:
+					minVal = A[j]
+					minIdx = j
+				yield A
+			swap(A, i, minIdx)
+			yield A
+	
 	# Get appropriate generator to supply to matplotlib FuncAnimation method.
 	if method == "b":
 		title = "Bubble sort"
@@ -156,6 +148,34 @@ if __name__ == "__main__":
 		title = "Selection sort"
 		generator = selectionsort(A)
 
+	return generator,title
+
+
+def resetArray( N):
+	# Build and randomly shuffle list of integers.
+	global A
+	A = [x + 1 for x in range(N)]
+	random.seed(time.time())
+	random.shuffle(A)
+
+def createOrResetCanvas(fig):
+	canvas = FigureCanvasTkAgg(fig, master = window)
+	canvas.draw()
+
+
+
+
+	canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
+	canvas.mpl_connect("key_press_event", key_press_handler)
+	toolbar = NavigationToolbar2Tk(canvas,window, pack_toolbar=False)
+	toolbar.update()
+	toolbar.pack(side=BOTTOM, fill=X)
+
+	canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+
+	return canvas
+
+def createPlot(title):
 	# Initialize figure and axis.
 	fig = figure.Figure() #using plt.subplots hijacks the terminal if we close the window in the middle of sorting
 	# fig, ax = plt.subplots()
@@ -173,32 +193,15 @@ if __name__ == "__main__":
 	# Set axis limits. Set y axis upper limit high enough that the tops of
 	# the bars won't overlap with the text label.
 	# ax.set_xlim(0, N)
-	# ax.set_ylim(0, (N+4))
+	ax.set_ylim(0, (N+4))
 
 	# Place a text label in the upper-left corner of the plot to display
 	# number of operations performed by the sorting algorithm (each "yield"
 	# is treated as 1 operation).
 	text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+	return (fig, ax, bar_rects, text)
 
-	#adding tkinter:
-	canvas = FigureCanvasTkAgg(fig, master = window)
-	canvas.draw()
-
-
-	toolbar = NavigationToolbar2Tk(canvas,window, pack_toolbar=False)
-	toolbar.update()
-
-	canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
-	canvas.mpl_connect("key_press_event", key_press_handler)
-
-	button = Button(master=window, text="Quit", command=window.quit)
-	button.pack(side=BOTTOM)
-
-	toolbar.pack(side=BOTTOM, fill=X)
-	canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-
-
-
+def graphAnimation(text, bar_rects,fig, generator):
 	# Define function update_fig() for use with matplotlib.pyplot.FuncAnimation().
 	# To track the number of operations, i.e., iterations through which the
 	# animation has gone, define a variable "iteration". This variable will
@@ -209,25 +212,64 @@ if __name__ == "__main__":
 	# passed by value).
 	# NOTE: Alternatively, iteration could be re-declared within update_fig()
 	# with the "global" keyword (or "nonlocal" keyword).
-	iteration = 0
-	def update_fig(A, rects):
+	iteration = [0]
+	def update_fig(A, rects, iteration):
 		for rect, val in zip(rects, A):
 			rect.set_height(val)
-		global iteration
-		iteration += 1
+		# global iteration
+		iteration[0] += 1
 		text.set_text("# of operations: {}".format(iteration))
 
-
+	global anim
 	anim = animation.FuncAnimation(fig, func=update_fig,
-		fargs=( [bar_rects]), frames=generator, interval=1,
+		fargs=( bar_rects,iteration), frames=generator, interval=1,
 		repeat=False)
-	ax.set_ylim(0,(N+4))
 
-	def onClosing():
-		global canvas
-		# canvas.
-		# window.quit()
-		window.destroy()
+def visualize(method, N):
+	global fig
+	global canvas
+	#reseting the array
+	resetArray( N)
+	if (canvas != None):
+		canvas.get_tk_widget().pack_forget()
+		fig.clear()
+	
+	#getting the correct sort function
+	generator,title = sort(method, N)
 
-	window.protocol("WM_DELETE_WINDOW", onClosing)
-	window.mainloop()
+
+	#creating the figure and bar graph that we will later animate
+	fig,ax,bar_rects, text = createPlot(title)
+
+	#creating the canvas and putting the graph on it:
+	canvas = createOrResetCanvas(fig)
+
+	#animating the graph
+	graphAnimation(text, bar_rects, fig, generator)
+
+
+def onClosing():
+	'''Event handler to close the window gracefully'''
+	global canvas
+	# canvas.
+	# window.quit()
+	window.destroy()
+
+
+#main program:
+window = Tk()
+window.title("Sorting Visualizer")
+window.geometry("600x600")
+window.protocol("WM_DELETE_WINDOW", onClosing)
+canvas = None
+
+method = 'b'
+N = 30
+A = []
+fig = None
+button = Button(master=window, text="BubbleSort", command= lambda: visualize('b',N))
+button.pack(side=BOTTOM)
+
+# visualize('b',N)
+
+window.mainloop()
