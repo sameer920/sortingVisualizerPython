@@ -159,25 +159,30 @@ def resetArray( N):
 	random.shuffle(A)
 
 def createOrResetCanvas(fig):
-	canvas = FigureCanvasTkAgg(fig, master = window)
-	canvas.draw()
+	global canvas
+	if (canvas == None):
+		#Create a new canvas if it doesn't exist
+		canvas = FigureCanvasTkAgg(fig, master = window)
 
+		canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
+		canvas.mpl_connect("key_press_event", key_press_handler)
+		toolbar = NavigationToolbar2Tk(canvas,window, pack_toolbar=False)
+		toolbar.update()
+		toolbar.pack(side=BOTTOM, fill=X)
 
+		canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
 
+	canvas.draw() #draw or redraw the canvas. Not using pack_forget as we can reuse the same canvas through this, and therefore, we don't need to worry about memory leaks or toolbars stacking over each other.
 
-	canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
-	canvas.mpl_connect("key_press_event", key_press_handler)
-	toolbar = NavigationToolbar2Tk(canvas,window, pack_toolbar=False)
-	toolbar.update()
-	toolbar.pack(side=BOTTOM, fill=X)
+def createPlot(fig,title):
 
-	canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+	if (fig != None):
+		#if fig exists, it means this function is called again and we need to clear the figure, so it can be re-initialized
+		fig.clear()
 
-	return canvas
-
-def createPlot(title):
-	# Initialize figure and axis.
-	fig = figure.Figure() #using plt.subplots hijacks the terminal if we close the window in the middle of sorting
+	if (fig == None):
+		# Initialize figure and axis if they don't exist.
+		fig = figure.Figure() #using plt.subplots hijacks the terminal if we close the window in the middle of sorting
 	# fig, ax = plt.subplots()
 	ax = fig.add_subplot()
 	ax.set_title(title)
@@ -230,19 +235,17 @@ def visualize(method, N):
 	global canvas
 	#reseting the array
 	resetArray( N)
-	if (canvas != None):
-		canvas.get_tk_widget().pack_forget()
-		fig.clear()
 	
 	#getting the correct sort function
 	generator,title = sort(method, N)
 
 
 	#creating the figure and bar graph that we will later animate
-	fig,ax,bar_rects, text = createPlot(title)
+	fig,ax,bar_rects, text = createPlot(fig,title)
+
 
 	#creating the canvas and putting the graph on it:
-	canvas = createOrResetCanvas(fig)
+	createOrResetCanvas(fig)
 
 	#animating the graph
 	graphAnimation(text, bar_rects, fig, generator)
