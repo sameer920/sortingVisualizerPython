@@ -14,7 +14,8 @@ def fillFile(n, filename):
     if (filename == None):
         filename = input("Please enter a filename: ")
     filename = f"files/{filename}"
-    lst = [str(random.randint(1,n)) + '\n' for x in range(n)]
+    random.seed(time.time())
+    lst = [str(random.randint(1,n*10)) + '\n' for x in range(n)]
     with open(filename, "w") as f:
         f.writelines(lst)
     return lst

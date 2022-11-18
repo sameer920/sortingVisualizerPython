@@ -187,27 +187,27 @@ def createPlot(fig,title, N):
 	if (fig == None):
 		# Initialize figure and axis if they don't exist.
 		fig = figure.Figure() #using plt.subplots hijacks the terminal if we close the window in the middle of sorting
-	# fig, ax = plt.subplots()
+
 	ax = fig.add_subplot()
-	ax.set_title(title)
-	# plt.title(title)
-	
+	ax.set_title(title)	
 
 	# Initialize a bar plot. Note that matplotlib.pyplot.bar() returns a
 	# list of rectangles (with each bar in the bar plot corresponding
 	# to one rectangle), which we store in bar_rects.
 	
 	bar_rects = ax.bar(range(len(A)), A, align="center") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
-
+	for bar in bar_rects:
+		bar.set_animated(True)
 	# Set axis limits. Set y axis upper limit high enough that the tops of
 	# the bars won't overlap with the text label.
-	# ax.set_xlim(0, N)
-	ax.set_ylim(0, (N*1.1))
+	# ax.set_xlim(-1, N )
+	ax.set_ylim(0, (max(A)*1.1))
 
 	# Place a text label in the upper-left corner of the plot to display
 	# number of operations performed by the sorting algorithm (each "yield"
 	# is treated as 1 operation).
 	text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+	text.set_animated(True)
 	return (fig, ax, bar_rects, text)
 
 def graphAnimation(text, bar_rects,fig, generator):
@@ -224,17 +224,21 @@ def graphAnimation(text, bar_rects,fig, generator):
 	iteration = [0]
 
 	def update_fig(A, rects, iteration):
+		changes =[]
 		for rect, val in zip(rects, A):
-			rect.set_height(val)
+			if (rect.get_height()!= val):
+				rect.set_height(val)
+				changes.append(rect)
 		# global iteration
 		iteration[0] += 1
 		text.set_text("# of memory swaps: {}".format(iteration[0]))
+		return rects
 
 
 	global anim
 	anim = animation.FuncAnimation(fig, func=update_fig,
 		fargs=( bar_rects,iteration), frames=generator, interval=0,
-		repeat=False)
+		repeat=False, blit=True)
 
 def visualize(method, N):
 	global fig
