@@ -45,7 +45,7 @@ def sort(method, N):
 				if A[j] > A[j + 1]:
 					swap(A, j, j + 1)
 					swapped = True
-				yield A
+					yield A
 
 	def insertionsort(A):
 		"""In-place insertion sort."""
@@ -67,7 +67,7 @@ def sort(method, N):
 		yield from mergesort(A, start, mid)
 		yield from mergesort(A, mid + 1, end)
 		yield from merge(A, start, mid, end)
-		yield A
+		# yield A
 
 	def merge(A, start, mid, end):
 		"""Helper function for merge sort."""
@@ -109,7 +109,7 @@ def sort(method, N):
 			if A[i] < pivot:
 				swap(A, i, pivotIdx)
 				pivotIdx += 1
-			yield A
+				yield A
 		swap(A, end, pivotIdx)
 		yield A
 
@@ -129,7 +129,7 @@ def sort(method, N):
 				if A[j] < minVal:
 					minVal = A[j]
 					minIdx = j
-				yield A
+				# yield A
 			swap(A, i, minIdx)
 			yield A
 	
@@ -228,7 +228,7 @@ def graphAnimation(text, bar_rects,fig, generator):
 			rect.set_height(val)
 		# global iteration
 		iteration[0] += 1
-		text.set_text("# of operations: {}".format(iteration[0]))
+		text.set_text("# of memory swaps: {}".format(iteration[0]))
 
 
 	global anim
