@@ -22,6 +22,9 @@ def fillFile(n, filename):
 # fillFile(50, "50.txt")
 
 def generateNewFile(filename):
+    '''
+    Write randomly generated numbers to a file having the supplied filename
+    '''
     size = int(filename[:-4])
     generatedData = fillFile(size,filename)
     print(generatedData)

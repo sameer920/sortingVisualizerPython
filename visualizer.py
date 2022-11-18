@@ -163,12 +163,14 @@ def sort(method, N):
 def createOrResetCanvas(fig):
 	global canvas
 	if (canvas == None):
+		matplotlibFrame = Frame(window)
+		matplotlibFrame.grid()
 		#Create a new canvas if it doesn't exist
-		canvas = FigureCanvasTkAgg(fig, master = window)
+		canvas = FigureCanvasTkAgg(fig, master = matplotlibFrame)
 
 		canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
 		canvas.mpl_connect("key_press_event", key_press_handler)
-		toolbar = NavigationToolbar2Tk(canvas,window, pack_toolbar=False)
+		toolbar = NavigationToolbar2Tk(canvas,matplotlibFrame, pack_toolbar=False)
 		toolbar.update()
 		toolbar.pack(side=BOTTOM, fill=X)
 
@@ -281,21 +283,25 @@ options = ["Bubble Sort","Insertion Sort", "Merge Sort", "Quick Sort", "Selectio
 sortingMethod = StringVar()
 sortingMethod.set(options[0])
 dropDown = OptionMenu(window, sortingMethod, options[0], *options)
-dropDown.pack()
+# dropDown.pack()
+dropDown.grid()
 
 #files drop down
 filenames  = os.listdir("files")
 fileSelected = StringVar()
 fileSelected.set(filenames[0])
 fileDropDown = OptionMenu(window, fileSelected, filenames[0], *filenames)
-fileDropDown.pack()
+# fileDropDown.pack()
+fileDropDown.grid()
 
 
 runButton = Button(master=window, text="Run", command= lambda: runProgram(fileSelected, sortingMethod))
-runButton.pack(side=BOTTOM)
+# runButton.pack(side=BOTTOM)
+runButton.grid(ipadx=30, ipady = 3)
 
 #Creating a button to reset the file:
 newDataButton = Button(master = window, text="Generate New Data", command= lambda: handlFiles.generateNewFile(fileSelected.get()))
-newDataButton.pack()
+# newDataButton.pack()
+newDataButton.grid(ipadx= 12.5, ipady = 3)
 
 window.mainloop()
