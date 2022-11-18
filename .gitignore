@@ -2,3 +2,4 @@ files
 *.txt
 test.py
 gfg.py
+__pycache__

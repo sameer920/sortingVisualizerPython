@@ -22,54 +22,54 @@ import handlFiles
 #     \n(q)uick\n(s)election\n"
 # method = input(method_msg)
 
-def sort(method, N):
-	global A
-	def swap(A, i, j):
+def sort(method, size):
+	global array
+	def swap(array, i, j):
 		"""Helper function to swap elements i and j of list A."""
 
 		if i != j:
-			A[i], A[j] = A[j], A[i]
+			array[i], array[j] = array[j], array[i]
 
-	def bubblesort(A):
+	def bubblesort(array):
 		"""In-place bubble sort."""
 
-		if len(A) == 1:
+		if len(array) == 1:
 			return
 
 		swapped = True
-		for i in range(len(A) - 1):
+		for i in range(len(array) - 1):
 			if not swapped:
 				break
 			swapped = False
-			for j in range(len(A) - 1 - i):
-				if A[j] > A[j + 1]:
-					swap(A, j, j + 1)
+			for j in range(len(array) - 1 - i):
+				if array[j] > array[j + 1]:
+					swap(array, j, j + 1)
 					swapped = True
-					yield A
+					yield array
 
-	def insertionsort(A):
+	def insertionsort(array):
 		"""In-place insertion sort."""
 
-		for i in range(1, len(A)):
+		for i in range(1, len(array)):
 			j = i
-			while j > 0 and A[j] < A[j - 1]:
-				swap(A, j, j - 1)
+			while j > 0 and array[j] < array[j - 1]:
+				swap(array, j, j - 1)
 				j -= 1
-				yield A
+				yield array
 
-	def mergesort(A, start, end):
+	def mergesort(array, start, end):
 		"""Merge sort."""
 
 		if end <= start:
 			return
 
 		mid = start + ((end - start + 1) // 2) - 1
-		yield from mergesort(A, start, mid)
-		yield from mergesort(A, mid + 1, end)
-		yield from merge(A, start, mid, end)
+		yield from mergesort(array, start, mid)
+		yield from mergesort(array, mid + 1, end)
+		yield from merge(array, start, mid, end)
 		# yield A
 
-	def merge(A, start, mid, end):
+	def merge(array, start, mid, end):
 		"""Helper function for merge sort."""
 		
 		merged = []
@@ -77,78 +77,79 @@ def sort(method, N):
 		rightIdx = mid + 1
 
 		while leftIdx <= mid and rightIdx <= end:
-			if A[leftIdx] < A[rightIdx]:
-				merged.append(A[leftIdx])
+			if array[leftIdx] < array[rightIdx]:
+				merged.append(array[leftIdx])
 				leftIdx += 1
 			else:
-				merged.append(A[rightIdx])
+				merged.append(array[rightIdx])
 				rightIdx += 1
 
 		while leftIdx <= mid:
-			merged.append(A[leftIdx])
+			merged.append(array[leftIdx])
 			leftIdx += 1
 
 		while rightIdx <= end:
-			merged.append(A[rightIdx])
+			merged.append(array[rightIdx])
 			rightIdx += 1
 
 		for i, sorted_val in enumerate(merged):
-			A[start + i] = sorted_val
-			yield A
+			array[start + i] = sorted_val
+			yield array
 
-	def quicksort(A, start, end):
+	def quicksort(array, start, end):
 		"""In-place quicksort."""
 
 		if start >= end:
 			return
 
-		pivot = A[end]
+		pivot = array[end]
 		pivotIdx = start
 
 		for i in range(start, end):
-			if A[i] < pivot:
-				swap(A, i, pivotIdx)
+			if array[i] < pivot:
+				swap(array, i, pivotIdx)
 				pivotIdx += 1
-				yield A
-		swap(A, end, pivotIdx)
-		yield A
+				yield array
+		swap(array, end, pivotIdx)
+		yield array
 
-		yield from quicksort(A, start, pivotIdx - 1)
-		yield from quicksort(A, pivotIdx + 1, end)
+		yield from quicksort(array, start, pivotIdx - 1)
+		yield from quicksort(array, pivotIdx + 1, end)
 
-	def selectionsort(A):
+	def selectionsort(array):
 		"""In-place selection sort."""
-		if len(A) == 1:
+		if len(array) == 1:
 			return
 
-		for i in range(len(A)):
+		for i in range(len(array)):
 			# Find minimum unsorted value.
-			minVal = A[i]
+			minVal = array[i]
 			minIdx = i
-			for j in range(i, len(A)):
-				if A[j] < minVal:
-					minVal = A[j]
+			for j in range(i, len(array)):
+				if array[j] < minVal:
+					minVal = array[j]
 					minIdx = j
 				# yield A
-			swap(A, i, minIdx)
-			yield A
-	
+			swap(array, i, minIdx)
+			yield array
+		
+			
 	# Get appropriate generator to supply to matplotlib FuncAnimation method.
 	if method == "b":
 		title = "Bubble sort"
-		generator = bubblesort(A)
+		generator = bubblesort(array)
 	elif method == "i":
 		title = "Insertion sort"
-		generator = insertionsort(A)
+		generator = insertionsort(array)
 	elif method == "m":
 		title = "Merge sort"
-		generator = mergesort(A, 0, N - 1)
+		generator = mergesort(array, 0, size - 1)
 	elif method == "q":
 		title = "Quicksort"
-		generator = quicksort(A, 0, N - 1)
+		generator = quicksort(array, 0, size - 1)
 	else:
 		title = "Selection sort"
-		generator = selectionsort(A)
+		generator = selectionsort(array)
 
 	return generator,title
 
@@ -178,7 +179,7 @@ def createOrResetCanvas(fig):
 
 	canvas.draw() #draw or redraw the canvas. Not using pack_forget as we can reuse the same canvas through this, and therefore, we don't need to worry about memory leaks or toolbars stacking over each other.
 
-def createPlot(fig,title, N):
+def createPlot(fig,title):
 
 	if (fig != None):
 		#if fig exists, it means this function is called again and we need to clear the figure, so it can be re-initialized
@@ -195,13 +196,13 @@ def createPlot(fig,title, N):
 	# list of rectangles (with each bar in the bar plot corresponding
 	# to one rectangle), which we store in bar_rects.
 	
-	bar_rects = ax.bar(range(len(A)), A, align="center") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
+	bar_rects = ax.bar(range(len(array)), array, align="center") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
 	for bar in bar_rects:
 		bar.set_animated(True)
 	# Set axis limits. Set y axis upper limit high enough that the tops of
 	# the bars won't overlap with the text label.
 	# ax.set_xlim(-1, N )
-	ax.set_ylim(0, (max(A)*1.1))
+	ax.set_ylim(0, (max(array)*1.1))
 
 	# Place a text label in the upper-left corner of the plot to display
 	# number of operations performed by the sorting algorithm (each "yield"
@@ -223,9 +224,9 @@ def graphAnimation(text, bar_rects,fig, generator):
 	# with the "global" keyword (or "nonlocal" keyword).
 	iteration = [0]
 
-	def update_fig(A, rects, iteration):
+	def update_fig(array, rects, iteration):
 		changes =[]
-		for rect, val in zip(rects, A):
+		for rect, val in zip(rects, array):
 			if (rect.get_height()!= val):
 				rect.set_height(val)
 				changes.append(rect)
@@ -240,7 +241,7 @@ def graphAnimation(text, bar_rects,fig, generator):
 		fargs=( bar_rects,iteration), frames=generator, interval=0,
 		repeat=False, blit=True)
 
-def visualize(method, N):
+def visualize(method, size):
 	global fig
 	global canvas
 
@@ -248,11 +249,11 @@ def visualize(method, N):
 	# resetArray( N)
 	
 	#getting the correct sort function
-	generator,title = sort(method, N)
+	generator,title = sort(method, size)
 
 
 	#creating the figure and bar graph that we will later animate
-	fig,ax,bar_rects, text = createPlot(fig,title,N)
+	fig,ax,bar_rects, text = createPlot(fig,title)
 
 
 	#creating the canvas and putting the graph on it:
@@ -265,13 +266,13 @@ def runProgram(fileSelected, sortingMethod):
 	method = sortingMethod.get()[0].lower()
 	fileName = fileSelected.get()
 
-	global A
-	A = handlFiles.readFile(fileName)
-	N = len(A)
-	if (N <= 0):
+	global array
+	array = handlFiles.readFile(fileName)
+	size = len(array)
+	if (size <= 0):
 		print("The file you selected was empty, or was not read properly")
 		return
-	visualize(method,N)
+	visualize(method,size)
 
 
 #main program:
@@ -280,7 +281,7 @@ window.title("Sorting Visualizer")
 window.geometry("600x600")
 canvas = None
 # method = 'b'
-A = []
+array = []
 fig = None
 #sorting dropdown
 options = ["Bubble Sort","Insertion Sort", "Merge Sort", "Quick Sort", "Selection Sort"] 
