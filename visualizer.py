@@ -22,7 +22,7 @@ import handlFiles
 #     \n(q)uick\n(s)election\n"
 # method = input(method_msg)
 
-def sort(method, size):
+def sort(method, size, a, b):
 	global array
 	def swap(array, i, j):
 		"""Helper function to swap elements i and j of list A."""
@@ -301,7 +301,7 @@ def sort(method, size):
 			place *= 10
 
 	# Get appropriate generator to supply to matplotlib FuncAnimation method.
-	if (method == "Bubble Sort" or method == "Select Sorting Method"):
+	if (method == "Bubble Sort"):
 		title = "Bubble sort"
 		generator = bubblesort(array)
 	elif method == "Insertion Sort":
@@ -330,7 +330,7 @@ def sort(method, size):
 		generator = bucketSort(array)
 	elif method == "Count Sort Modified (8.1.4)":
 		title = "Count Sort Modified (8.1.4)"
-		generator = countSortModified(array, 2, 8)
+		generator = countSortModified(array, a, b)
 	elif method == "Radix Sort":
 		title = "Radix Sort"
 		generator = radixSort(array)
@@ -445,7 +445,7 @@ def graphAnimation(text, bar_rects, labels,fig, generator):
 		fargs=( bar_rects, labels, iteration), frames=generator, interval=0,
 		repeat=False)
 
-def visualize(method, size):
+def visualize(method, size,a,b):
 	global fig
 	global canvas
 
@@ -453,7 +453,7 @@ def visualize(method, size):
 	# resetArray( N)
 	
 	#getting the correct sort function
-	generator,title = sort(method, size)
+	generator,title = sort(method, size, a ,b)
 
 
 	#creating the figure and bar graph that we will later animate
@@ -466,17 +466,23 @@ def visualize(method, size):
 	#animating the graph
 	graphAnimation(text, bar_rects, labels, fig, generator)
 	
-def runProgram(fileSelected, sortingMethod):
+def runProgram(fileSelected, sortingMethod, inputArray):
 	method = sortingMethod.get()
 	fileName = fileSelected.get()
+	a=b = -1
 
+
+	if (sortingMethod.get() == "Count Sort Modified (8.1.4)"):
+		a = inputArray[0].get()
+		b = inputArray[1].get()
+		
 	global array
 	array = handlFiles.readFile(fileName)
 	size = len(array)
 	if (size <= 0):
 		print("The file you selected was empty, or was not read properly")
 		return
-	visualize(method,size)
+	visualize(method,size, a,b)
 
 
 #main program:
@@ -510,8 +516,18 @@ fileLabel = Label(window, text="Select Data Size: ", font=("arial 12"))
 fileLabel.grid(row=1, column=6)
 fileDropDown.grid(row=1, column= 7)
 
+#a and b inputs:
+aLabel = Label(window, text="Input value for a: ", font=("Arial 12"))
+bLabel = Label(window, text="Input value for b: ", font=("Arial 12"))
+a = Entry(window)
+b = Entry(window)
 
-runButton = Button(master=window, text="Run", command= lambda: runProgram(fileSelected, sortingMethod))
+aLabel.grid(row=1, column=9)
+a.grid(row=1, column=10)
+bLabel.grid(row=1, column=11)
+b.grid(row=1, column=12)
+
+runButton = Button(master=window, text="Run", command= lambda: runProgram(fileSelected, sortingMethod, [a, b]))
 # runButton.pack(side=BOTTOM)
 runButton.grid(ipadx=30, ipady = 3, row=1, column=5)
 
