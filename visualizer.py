@@ -322,6 +322,9 @@ def sort(method, size):
 		title = "Heap Sort"
 		generator = heapSort(array)
 	elif method == "Bucket Sort":
+		for i in range(len(array)):
+			while (array[i] >= 1):
+				array[i] = round((array[i]/10), 3)
 		title = "Bucket Sort"
 		generator = bucketSort(array)
 	elif method == "Count Sort Modified (8.1.4)":
