@@ -23,6 +23,7 @@ import handlFiles
 # method = input(method_msg)
 
 def sort(method, size, a, b):
+
 	global array
 	def swap(array, i, j):
 		"""Helper function to swap elements i and j of list A."""
@@ -31,7 +32,6 @@ def sort(method, size, a, b):
 			array[i], array[j] = array[j], array[i]
 
 	def bubblesort(array):
-		"""In-place bubble sort."""
 		if len(array) == 1:
 			return
 
@@ -49,8 +49,6 @@ def sort(method, size, a, b):
 			# yield (array, [-1, -1], [len(array) - i, len(array) -1] )
 
 	def insertionsort(array):
-		"""In-place insertion sort."""
-
 		for i in range(1, len(array)):
 			j = i
 			while j > 0 and array[j] < array[j - 1]:
@@ -60,7 +58,6 @@ def sort(method, size, a, b):
 			yield (array, [j, j+1], [0, i])
 
 	def mergesort(array, start, end):
-		"""Merge sort."""
 
 		if end <= start:
 			return
@@ -72,7 +69,6 @@ def sort(method, size, a, b):
 		yield array, [-1], [start,end]
 
 	def merge(array, start, mid, end):
-		"""Helper function for merge sort."""
 		
 		merged = []
 		leftIdx = start
@@ -102,7 +98,6 @@ def sort(method, size, a, b):
 		yield (array, [-1], [start, end])
 
 	def quicksort(array, start, end):
-		"""In-place quicksort."""
 
 		if start >= end:
 			return
@@ -123,7 +118,6 @@ def sort(method, size, a, b):
 		yield (array, [-1], [start, end])
 
 	def quicksortCoarse(array, start, end):
-		"""In-place quicksort."""
 
 		if end - start <= 10:
 			insertionsort(array)
@@ -144,7 +138,6 @@ def sort(method, size, a, b):
 		yield (array, [-1], [start, end])
 
 	def selectionsort(array):
-		"""In-place selection sort."""
 		if len(array) == 1:
 			return
 
@@ -399,13 +392,10 @@ def createPlot(fig,title):
 	ax = fig.add_subplot()
 	ax.set_title(title)	
 
-	# Initialize a bar plot. Note that matplotlib.pyplot.bar() returns a
-	# list of rectangles (with each bar in the bar plot corresponding
-	# to one rectangle), which we store in bar_rects.
+	# Initialize a bar plot. Note that matplotlib.pyplot.bar() messed with the animation
 	
 	bar_rects = ax.bar(range(len(array)), array, align="center", color="c") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
-	# for bar in bar_rects:
-	# 	bar.set_animated(True)
+
 	# Set axis limits. Set y axis upper limit high enough that the tops of
 	# the bars won't overlap with the text label.
 	# ax.set_xlim(-1, N )
@@ -413,34 +403,25 @@ def createPlot(fig,title):
 
 	labels = ax.bar_label(bar_rects, label_type="center")
 
-	# Place a text label in the upper-left corner of the plot to display
-	# number of operations performed by the sorting algorithm (each "yield"
-	# is treated as 1 operation).
+	# Place a text label in the upper-left corner of the plot 
 	time = ax.text(0.02, 0.95, "", transform=ax.transAxes)
 	timeComplexity = ax.text(0.02, 0.9, "", transform = ax.transAxes)
 	spaceComplexity = ax.text(0.02, 0.85, "", transform = ax.transAxes)
 	inRangeText = ax.text(0.02, 0.8, "", transform = ax.transAxes)
 	text = [time, timeComplexity, spaceComplexity, inRangeText]
-	# text.set_animated(True)
+	
 	return (fig, ax, bar_rects, labels, text)
 
 def graphAnimation(text, bar_rects, labels, complexity,  fig, generator):
 	# Define function update_fig() for use with matplotlib.pyplot.FuncAnimation().
-	# To track the number of operations, i.e., iterations through which the
-	# animation has gone, define a variable "iteration". This variable will
-	# be passed to update_fig() to update the text label, and will also be
-	# incremented in update_fig(). For this increment to be reflected outside
-	# the function, we make "iteration" a list of 1 element, since lists (and
-	# other mutable objects) are passed by reference (but an integer would be
-	# passed by value).
-	# NOTE: Alternatively, iteration could be re-declared within update_fig()
-	# with the "global" keyword (or "nonlocal" keyword).
+	
 	iteration = [0]
 	timeStart = [time.time()]
 	text[1].set_text(f"Time Complexity: {complexity[0]}")
 	text[2].set_text(f"Space Complexity: {complexity[1]}")
 
 	def update_fig(generatorOutput, rects, labels, timeStart):
+
 		if (len(generatorOutput) == 4):
 			array, memoryAccess, sortedTillNow, _ = generatorOutput
 		else:
@@ -451,22 +432,23 @@ def graphAnimation(text, bar_rects, labels, complexity,  fig, generator):
 			if (sortedTillNow != -1 and i< sortedTillNow[0]):
 				rect.set_color("c")
 			if (memoryAccess[0] != -1 and (i == memoryAccess[0] or i == memoryAccess[1])):
-				# print(i, memoryAccess)
 				rect.set_color("r")
 			label.set_text(val)
 			rect.set_height(val)
 			i+=1
+
 		if (sortedTillNow != -1):
 			if sortedTillNow[1] == len(array):
 				sortedTillNow[1] -=1
+
 			for i in range(sortedTillNow[0], sortedTillNow[1]+1):
-				# time.sleep(0.2)
 				rects[i].set_color('g')
+
 		if (len(generatorOutput) == 4):
 			text[3].set_text(f"{generatorOutput[3][2]} Number(s) in range {generatorOutput[3][0]} and {generatorOutput[3][1]}")
-		# global iteration
+
 		# iteration[0] += 1
-		text[0].set_text("# of memory swaps: {0:.3f}".format((time.time() - timeStart[0])))
+		text[0].set_text("Time elapsed: {0:.3f}".format((time.time() - timeStart[0])))
 		# return rects
 
 
@@ -478,9 +460,6 @@ def graphAnimation(text, bar_rects, labels, complexity,  fig, generator):
 def visualize(method, size,a,b):
 	global fig
 	global canvas
-
-	# #reseting the array
-	# resetArray( N)
 	
 	#getting the correct sort function
 	generator,title, complexity = sort(method, size, int(a) ,int(b))
@@ -516,23 +495,27 @@ def runProgram(fileSelected, sortingMethod, inputArray):
 
 
 #main program:
+#creating window
 window = Tk()
 window.title("Sorting Visualizer")
 window.geometry("1300x750")
-canvas = None
 
+
+canvas = None
+array = []
+fig = None
+
+# Setting row column lengths height
 window.rowconfigure(0, {'minsize': 30})
 window.rowconfigure(2, {'minsize': 30})
 window.columnconfigure(0, {'minsize': 60})
 
-array = []
-fig = None
 #sorting dropdown
 options = ["Bubble Sort","Insertion Sort", "Merge Sort", "Quick Sort","Heap Sort", "Quick Sort Coarse (7.4.5)","Count Sort", "Radix Sort", "Bucket Sort", "Count Sort Modified (8.1.4)"] 
 sortingMethod = StringVar()
 sortingMethod.set(options[0])
 dropDown = OptionMenu(window, sortingMethod,options[0],*options)
-# dropDown.pack()
+
 sortLabel = Label(window,text = "Select Sorting Method", font=('Arial 12'))
 sortLabel.grid(row=1, column=1)
 dropDown.grid(row=1, column=2, columnspan=3)
@@ -557,13 +540,12 @@ a.grid(row=1, column=10)
 bLabel.grid(row=1, column=11)
 b.grid(row=1, column=12)
 
+# Run button
 runButton = Button(master=window, text="Run", command= lambda: runProgram(fileSelected, sortingMethod, [a, b]))
-# runButton.pack(side=BOTTOM)
 runButton.grid(ipadx=30, ipady = 3, row=1, column=5)
 
 #Creating a button to reset the file:
 newDataButton = Button(master = window, text="Generate New Data", command= lambda: handlFiles.generateNewFile(fileSelected.get()))
-# newDataButton.pack()
 newDataButton.grid(ipadx= 12.5, ipady = 3 , row=1, column=8)
 
 window.mainloop()
