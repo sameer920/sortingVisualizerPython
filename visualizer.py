@@ -167,11 +167,11 @@ def sort(method, size):
 		right = 2 * i + 2
 	
 		if left < n and array[i] < array[left]:
-			yield (array, [i, left], -1)		
+			yield (array, [i, left], [left+1, left])		
 			largest = left
 	
 		if right < n and array[largest] < array[right]:
-			yield (array, [largest, right], -1)			
+			yield (array, [largest, right], [right+1,right])			
 			largest = right
 	
 		# If root is not largest, swap with largest and continue heapifying
@@ -193,7 +193,8 @@ def sort(method, size):
 
 			# Heapify root element
 			yield from heapify(array, i, 0)
-			yield (array, [-1], [0, i])
+			yield (array, [-1], [i, len(array)-1])
+		yield (array, [-1], [0, len(array)-1])
 		
 	def countSort(array):
 		size = len(array)
@@ -382,7 +383,7 @@ def createPlot(fig,title):
 	# list of rectangles (with each bar in the bar plot corresponding
 	# to one rectangle), which we store in bar_rects.
 	
-	bar_rects = ax.bar(range(len(array)), array, align="center") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
+	bar_rects = ax.bar(range(len(array)), array, align="center", color="c") #plt.bar(x,height, width=0.8, bottom=None, *, align="center", data=None, **kwargs)
 	# for bar in bar_rects:
 	# 	bar.set_animated(True)
 	# Set axis limits. Set y axis upper limit high enough that the tops of
