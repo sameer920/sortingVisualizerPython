@@ -52,7 +52,6 @@ def sort(method, size):
 		"""In-place insertion sort."""
 
 		for i in range(1, len(array)):
-			print(i)
 			j = i
 			while j > 0 and array[j] < array[j - 1]:
 				swap(array, j, j - 1)
@@ -123,6 +122,27 @@ def sort(method, size):
 		yield from quicksort(array, pivotIdx + 1, end)
 		yield (array, [-1], [start, end])
 
+	def quicksortCoarse(array, start, end):
+		"""In-place quicksort."""
+
+		if end - start <= 10:
+			insertionsort(array)
+
+		pivot = array[end]
+		pivotIdx = start
+
+		for i in range(start, end):
+			if array[i] < pivot:
+				swap(array, i, pivotIdx)
+				pivotIdx += 1
+				yield (array, [i, end], [end+1, 0])
+		swap(array, end, pivotIdx)
+		yield (array, [-1], [pivotIdx, pivotIdx])
+
+		yield from quicksort(array, start, pivotIdx - 1)
+		yield from quicksort(array, pivotIdx + 1, end)
+		yield (array, [-1], [start, end])
+
 	def selectionsort(array):
 		"""In-place selection sort."""
 		if len(array) == 1:
@@ -139,6 +159,41 @@ def sort(method, size):
 				# yield A
 			swap(array, i, minIdx)
 			yield array
+
+	def heapify(array, n, i):
+		# Find largest among root and children
+		largest = i
+		left = 2 * i + 1
+		right = 2 * i + 2
+	
+		if left < n and array[i] < array[left]:
+			yield (array, [i, left], -1)		
+			largest = left
+	
+		if right < n and array[largest] < array[right]:
+			yield (array, [largest, right], -1)			
+			largest = right
+	
+		# If root is not largest, swap with largest and continue heapifying
+		if largest != i:
+			swap(array, i, largest)
+			# yield (array, [-1], -1)
+			yield from heapify(array, n, largest)
+		
+	def heapSort(array):
+		n = len(array)
+
+		# Build max heap
+		for i in range(n//2, -1, -1):
+			yield from heapify(array, n, i)
+
+		for i in range(n-1, 0, -1):
+			# Swap
+			swap(array, 0, i)
+
+			# Heapify root element
+			yield from heapify(array, i, 0)
+			yield (array, [-1], [0, i])
 		
 	def countSort(array):
 		size = len(array)
@@ -167,6 +222,17 @@ def sort(method, size):
 		for i in range(0, size):
 			array[i] = output[i]
 			yield (array, [-1], [0, i])
+
+
+	def countSortModified(array, a, b):
+		yield from countSort(array)
+		count = 0
+		for elem in array:
+			if (elem >= a and elem < b):
+				count +=1
+			if (elem > b):
+				break
+
 			
 	def bucketSort(array):
 		bucket = []
@@ -196,13 +262,41 @@ def sort(method, size):
 		
 	
 	def radixSort(array):
+
+		def countingSort(array, place):
+			size = len(array)
+			output = [0] * size
+			count = [0] * 10
+
+			# Calculate count of elements
+			for i in range(0, size):
+				index = array[i] // place
+				count[index % 10] += 1
+
+			# Calculate cumulative count
+			for i in range(1, 10):
+				count[i] += count[i - 1]
+
+			# Place the elements in sorted order
+			i = size - 1
+			while i >= 0:
+				index = array[i] // place
+				output[count[index % 10] - 1] = array[i]
+				count[index % 10] -= 1
+				i -= 1
+
+			for i in range(0, size):
+				array[i] = output[i]
+				yield (array, [-1], [0, i])
+
+
 		# Get maximum element
 		max_element = max(array)
 
 		# Apply counting sort to sort elements based on place value.
 		place = 1
 		while max_element // place > 0:
-			countSort(array, place)
+			yield from countingSort(array, place)
 			place *= 10
 
 	# Get appropriate generator to supply to matplotlib FuncAnimation method.
@@ -218,12 +312,21 @@ def sort(method, size):
 	elif method == "Quick Sort":
 		title = "Quicksort"
 		generator = quicksort(array, 0, size - 1)
+	elif method == "Quick Sort Coarse (7.4.5)":
+		title = "Quick Sort Coarse (7.4.5)"
+		generator = quicksortCoarse(array, 0, size - 1)
 	elif method == "Count Sort":
 		title = "Count Sort"
 		generator = countSort(array)
+	elif method == "Heap Sort":
+		title = "Heap Sort"
+		generator = heapSort(array)
 	elif method == "Bucket Sort":
 		title = "Bucket Sort"
 		generator = bucketSort(array)
+	elif method == "Count Sort Modified (8.1.4)":
+		title = "Count Sort Modified (8.1.4)"
+		generator = countSortModified(array, 2, 8)
 	elif method == "Radix Sort":
 		title = "Radix Sort"
 		generator = radixSort(array)
@@ -284,14 +387,16 @@ def createPlot(fig,title):
 	# ax.set_xlim(-1, N )
 	ax.set_ylim(0, (max(array)*1.1))
 
+	labels = ax.bar_label(bar_rects, label_type="center")
+
 	# Place a text label in the upper-left corner of the plot to display
 	# number of operations performed by the sorting algorithm (each "yield"
 	# is treated as 1 operation).
 	text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
 	# text.set_animated(True)
-	return (fig, ax, bar_rects, text)
+	return (fig, ax, bar_rects, labels, text)
 
-def graphAnimation(text, bar_rects,fig, generator):
+def graphAnimation(text, bar_rects, labels,fig, generator):
 	# Define function update_fig() for use with matplotlib.pyplot.FuncAnimation().
 	# To track the number of operations, i.e., iterations through which the
 	# animation has gone, define a variable "iteration". This variable will
@@ -303,36 +408,37 @@ def graphAnimation(text, bar_rects,fig, generator):
 	# NOTE: Alternatively, iteration could be re-declared within update_fig()
 	# with the "global" keyword (or "nonlocal" keyword).
 	iteration = [0]
+	timeStart = [time.time()]
 
-	def update_fig(array, rects, iteration):
+	def update_fig(array, rects, labels, timeStart):
 		print(array)
 		array, memoryAccess, sortedTillNow = array
 		i = 0;
-		for rect, val in zip(rects, array):
+		for rect, val, label in zip(rects, array, labels):
 			if (sortedTillNow != -1 and i< sortedTillNow[0]):
 				rect.set_color("c")
 			if (memoryAccess[0] != -1 and (i == memoryAccess[0] or i == memoryAccess[1])):
 				# print(i, memoryAccess)
 				rect.set_color("r")
-				# time.sleep(2)
+			label.set_text(val)
 			rect.set_height(val)
 			i+=1
 		if (sortedTillNow != -1):
-			print("I called")
 			if sortedTillNow[1] == len(array):
 				sortedTillNow[1] -=1
 			for i in range(sortedTillNow[0], sortedTillNow[1]+1):
 				# time.sleep(0.2)
 				rects[i].set_color('g')
 		# global iteration
-		iteration[0] += 1
-		text.set_text("# of memory swaps: {}".format(iteration[0]))
-		return rects
+		# iteration[0] += 1
+		text.set_text("# of memory swaps: {}".format(time.time() - timeStart[0]))
+		
+		# return rects
 
 
 	global anim
 	anim = animation.FuncAnimation(fig, func=update_fig,
-		fargs=( bar_rects,iteration), frames=generator, interval=0,
+		fargs=( bar_rects, labels, iteration), frames=generator, interval=0,
 		repeat=False)
 
 def visualize(method, size):
@@ -347,14 +453,14 @@ def visualize(method, size):
 
 
 	#creating the figure and bar graph that we will later animate
-	fig,ax,bar_rects, text = createPlot(fig,title)
+	fig,ax,bar_rects, labels, text = createPlot(fig,title)
 
 
 	#creating the canvas and putting the graph on it:
 	createOrResetCanvas(fig)
 
 	#animating the graph
-	graphAnimation(text, bar_rects, fig, generator)
+	graphAnimation(text, bar_rects, labels, fig, generator)
 	
 def runProgram(fileSelected, sortingMethod):
 	method = sortingMethod.get()
@@ -378,7 +484,7 @@ canvas = None
 array = []
 fig = None
 #sorting dropdown
-options = ["Bubble Sort","Insertion Sort", "Merge Sort", "Quick Sort", "Selection Sort","Count Sort", "Radix Sort", "Bucket Sort"] 
+options = ["Bubble Sort","Insertion Sort", "Merge Sort", "Quick Sort","Heap Sort", "Quick Sort Coarse (7.4.5)","Count Sort", "Radix Sort", "Bucket Sort", "Count Sort Modified (8.1.4)"] 
 sortingMethod = StringVar()
 sortingMethod.set(options[0])
 dropDown = OptionMenu(window, sortingMethod, options[0], *options)
