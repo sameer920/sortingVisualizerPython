@@ -233,6 +233,7 @@ def sort(method, size, a, b):
 				count +=1
 			if (elem > b):
 				break
+		yield(array, [-1], -1, [a,b,count])
 
 			
 	def bucketSort(array):
@@ -302,43 +303,62 @@ def sort(method, size, a, b):
 
 	# Get appropriate generator to supply to matplotlib FuncAnimation method.
 	if (method == "Bubble Sort"):
+		complexity = ["O(n^2)", "O(1)"]
 		title = "Bubble sort"
 		generator = bubblesort(array)
+
 	elif method == "Insertion Sort":
 		title = "Insertion sort"
 		generator = insertionsort(array)
+		complexity = ["O(n^2)", "O(1)"]
+
 	elif method == "Merge Sort":
 		title = "Merge sort"
 		generator = mergesort(array, 0, size - 1)
+		complexity = ["O(n log n)", "O(n)"]
+
 	elif method == "Quick Sort":
 		title = "Quicksort"
 		generator = quicksort(array, 0, size - 1)
+		complexity = ["O(n^2)", "O(n)"]
+
 	elif method == "Quick Sort Coarse (7.4.5)":
 		title = "Quick Sort Coarse (7.4.5)"
 		generator = quicksortCoarse(array, 0, size - 1)
+		complexity = ["O(n^2)", "O(n)"]
+
 	elif method == "Count Sort":
 		title = "Count Sort"
 		generator = countSort(array)
+		complexity = ["O(n + k)", "O(k)"]
+
 	elif method == "Heap Sort":
 		title = "Heap Sort"
 		generator = heapSort(array)
+		complexity = ["O(n log n)", "O(1)"]
+
 	elif method == "Bucket Sort":
 		for i in range(len(array)):
 			while (array[i] >= 1):
 				array[i] = round((array[i]/10), 3)
 		title = "Bucket Sort"
 		generator = bucketSort(array)
+		complexity = ["O(n^2)", "O(n)"]
+
 	elif method == "Count Sort Modified (8.1.4)":
 		title = "Count Sort Modified (8.1.4)"
 		generator = countSortModified(array, a, b)
+		complexity = ["O(n + k)", "O(k)"]
+
 	elif method == "Radix Sort":
 		title = "Radix Sort"
 		generator = radixSort(array)
+		complexity = ["O(nk)", "O(n + k)"]
 	# else:
 	# 	title = "Selection sort"
 	# 	generator = selectionsort(array)
 
-	return generator,title
+	return generator,title, complexity
 
 
 # def resetArray( N):
@@ -389,18 +409,22 @@ def createPlot(fig,title):
 	# Set axis limits. Set y axis upper limit high enough that the tops of
 	# the bars won't overlap with the text label.
 	# ax.set_xlim(-1, N )
-	ax.set_ylim(0, (max(array)*1.1))
+	ax.set_ylim(0, (max(array)*1.2))
 
 	labels = ax.bar_label(bar_rects, label_type="center")
 
 	# Place a text label in the upper-left corner of the plot to display
 	# number of operations performed by the sorting algorithm (each "yield"
 	# is treated as 1 operation).
-	text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+	time = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+	timeComplexity = ax.text(0.02, 0.9, "", transform = ax.transAxes)
+	spaceComplexity = ax.text(0.02, 0.85, "", transform = ax.transAxes)
+	inRangeText = ax.text(0.02, 0.8, "", transform = ax.transAxes)
+	text = [time, timeComplexity, spaceComplexity, inRangeText]
 	# text.set_animated(True)
 	return (fig, ax, bar_rects, labels, text)
 
-def graphAnimation(text, bar_rects, labels,fig, generator):
+def graphAnimation(text, bar_rects, labels, complexity,  fig, generator):
 	# Define function update_fig() for use with matplotlib.pyplot.FuncAnimation().
 	# To track the number of operations, i.e., iterations through which the
 	# animation has gone, define a variable "iteration". This variable will
@@ -413,11 +437,16 @@ def graphAnimation(text, bar_rects, labels,fig, generator):
 	# with the "global" keyword (or "nonlocal" keyword).
 	iteration = [0]
 	timeStart = [time.time()]
+	text[1].set_text(f"Time Complexity: {complexity[0]}")
+	text[2].set_text(f"Space Complexity: {complexity[1]}")
 
-	def update_fig(array, rects, labels, timeStart):
-		print(array)
-		array, memoryAccess, sortedTillNow = array
-		i = 0;
+	def update_fig(generatorOutput, rects, labels, timeStart):
+		if (len(generatorOutput) == 4):
+			array, memoryAccess, sortedTillNow, _ = generatorOutput
+		else:
+			array, memoryAccess, sortedTillNow= generatorOutput
+
+		i = 0
 		for rect, val, label in zip(rects, array, labels):
 			if (sortedTillNow != -1 and i< sortedTillNow[0]):
 				rect.set_color("c")
@@ -433,16 +462,17 @@ def graphAnimation(text, bar_rects, labels,fig, generator):
 			for i in range(sortedTillNow[0], sortedTillNow[1]+1):
 				# time.sleep(0.2)
 				rects[i].set_color('g')
+		if (len(generatorOutput) == 4):
+			text[3].set_text(f"{generatorOutput[3][2]} Number(s) in range {generatorOutput[3][0]} and {generatorOutput[3][1]}")
 		# global iteration
 		# iteration[0] += 1
-		text.set_text("# of memory swaps: {}".format(time.time() - timeStart[0]))
-		
+		text[0].set_text("# of memory swaps: {0:.3f}".format((time.time() - timeStart[0])))
 		# return rects
 
 
 	global anim
 	anim = animation.FuncAnimation(fig, func=update_fig,
-		fargs=( bar_rects, labels, iteration), frames=generator, interval=0,
+		fargs=( bar_rects, labels, timeStart), frames=generator, interval=0,
 		repeat=False)
 
 def visualize(method, size,a,b):
@@ -453,7 +483,7 @@ def visualize(method, size,a,b):
 	# resetArray( N)
 	
 	#getting the correct sort function
-	generator,title = sort(method, size, a ,b)
+	generator,title, complexity = sort(method, size, int(a) ,int(b))
 
 
 	#creating the figure and bar graph that we will later animate
@@ -464,7 +494,7 @@ def visualize(method, size,a,b):
 	createOrResetCanvas(fig)
 
 	#animating the graph
-	graphAnimation(text, bar_rects, labels, fig, generator)
+	graphAnimation(text, bar_rects, labels, complexity, fig, generator)
 	
 def runProgram(fileSelected, sortingMethod, inputArray):
 	method = sortingMethod.get()
