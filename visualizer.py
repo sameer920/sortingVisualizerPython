@@ -301,7 +301,7 @@ def sort(method, size):
 			place *= 10
 
 	# Get appropriate generator to supply to matplotlib FuncAnimation method.
-	if method == "Bubble Sort":
+	if (method == "Bubble Sort" or method == "Select Sorting Method"):
 		title = "Bubble sort"
 		generator = bubblesort(array)
 	elif method == "Insertion Sort":
@@ -334,9 +334,9 @@ def sort(method, size):
 	elif method == "Radix Sort":
 		title = "Radix Sort"
 		generator = radixSort(array)
-	else:
-		title = "Selection sort"
-		generator = selectionsort(array)
+	# else:
+	# 	title = "Selection sort"
+	# 	generator = selectionsort(array)
 
 	return generator,title
 
@@ -352,7 +352,7 @@ def createOrResetCanvas(fig):
 	global canvas
 	if (canvas == None):
 		matplotlibFrame = Frame(window)
-		matplotlibFrame.grid()
+		matplotlibFrame.grid(row=3, column=2, columnspan=10)
 		#Create a new canvas if it doesn't exist
 		canvas = FigureCanvasTkAgg(fig, master = matplotlibFrame)
 
@@ -374,7 +374,7 @@ def createPlot(fig,title):
 
 	if (fig == None):
 		# Initialize figure and axis if they don't exist.
-		fig = figure.Figure() #using plt.subplots hijacks the terminal if we close the window in the middle of sorting
+		fig = figure.Figure(figsize=(8, 6)) #using plt.subplots hijacks the terminal if we close the window in the middle of sorting
 
 	ax = fig.add_subplot()
 	ax.set_title(title)	
@@ -482,35 +482,42 @@ def runProgram(fileSelected, sortingMethod):
 #main program:
 window = Tk()
 window.title("Sorting Visualizer")
-window.geometry("600x600")
+window.geometry("1300x750")
 canvas = None
-# method = 'b'
+
+window.rowconfigure(0, {'minsize': 30})
+window.rowconfigure(2, {'minsize': 30})
+window.columnconfigure(0, {'minsize': 60})
+
 array = []
 fig = None
 #sorting dropdown
 options = ["Bubble Sort","Insertion Sort", "Merge Sort", "Quick Sort","Heap Sort", "Quick Sort Coarse (7.4.5)","Count Sort", "Radix Sort", "Bucket Sort", "Count Sort Modified (8.1.4)"] 
 sortingMethod = StringVar()
 sortingMethod.set(options[0])
-dropDown = OptionMenu(window, sortingMethod, options[0], *options)
+dropDown = OptionMenu(window, sortingMethod,options[0],*options)
 # dropDown.pack()
-dropDown.grid()
+sortLabel = Label(window,text = "Select Sorting Method", font=('Arial 12'))
+sortLabel.grid(row=1, column=1)
+dropDown.grid(row=1, column=2, columnspan=3)
 
 #files drop down
 filenames  = os.listdir("files")
 fileSelected = StringVar()
 fileSelected.set(filenames[0])
-fileDropDown = OptionMenu(window, fileSelected, filenames[0], *filenames)
-# fileDropDown.pack()
-fileDropDown.grid()
+fileDropDown = OptionMenu(window, fileSelected, filenames[0], *filenames, )
+fileLabel = Label(window, text="Select Data Size: ", font=("arial 12"))
+fileLabel.grid(row=1, column=6)
+fileDropDown.grid(row=1, column= 7)
 
 
 runButton = Button(master=window, text="Run", command= lambda: runProgram(fileSelected, sortingMethod))
 # runButton.pack(side=BOTTOM)
-runButton.grid(ipadx=30, ipady = 3)
+runButton.grid(ipadx=30, ipady = 3, row=1, column=5)
 
 #Creating a button to reset the file:
 newDataButton = Button(master = window, text="Generate New Data", command= lambda: handlFiles.generateNewFile(fileSelected.get()))
 # newDataButton.pack()
-newDataButton.grid(ipadx= 12.5, ipady = 3)
+newDataButton.grid(ipadx= 12.5, ipady = 3 , row=1, column=8)
 
 window.mainloop()
